@@ -1,0 +1,23 @@
+path: dataset  # root dataset folder
+train: images/train       # train images folder
+val: images/val           # validation images folder
+test: images/test         # test images folder (optional)
+
+nc: 16                    # number of classes
+names: 
+  0: "shirt, blouse"
+  1: "top, t-shirt, sweatshirt"
+  2: "sweater"
+  3: "cardigan"
+  4: "jacket"
+  5: "vest"
+  6: "pants"
+  7: "shorts"
+  8: "skirt"
+  9: "coat"
+  10: "bead"
+  11: "watch"
+  12: "cape"
+  13: "glasses"
+  14: "hat"
+  15: "scarf"

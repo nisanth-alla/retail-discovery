@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* The app uses Tailwind for layout and theming; custom styles can live here for
+   any non-utility classes (if desired). */

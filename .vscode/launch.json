@@ -1,0 +1,56 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Application",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.Application",
+            "projectName": "visual-retail-discovery"
+        },
+        {
+            "type": "java",
+            "name": "StyleRuleEngine",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.service.engine.StyleRuleEngine",
+            "projectName": "visual-retail-discovery"
+        },
+        {
+            "type": "java",
+            "name": "YoloFashionLabeler",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.service.engine.YoloFashionLabeler",
+            "projectName": "visual-retail-discovery"
+        },
+        {
+            "type": "java",
+            "name": "TestBasicYoloObjectClassification",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.unittests.TestBasicYoloObjectClassification",
+            "projectName": "visual-retail-discovery"
+        },
+        {
+            "type": "java",
+            "name": "TestYolo11nBoundingBoxes",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.unittests.TestYolo11nBoundingBoxes",
+            "projectName": "visual-retail-discovery"
+        },
+        {
+            "type": "java",
+            "name": "TestYoloObjectClassificationWithEmbeddingSearch",
+            "request": "launch",
+            "mainClass": "com.innova.visual_retail_discovery.unittests.TestYoloObjectClassificationWithEmbeddingSearch",
+            "projectName": "visual-retail-discovery"
+        }
+    ]
+}
