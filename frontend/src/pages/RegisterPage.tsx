@@ -29,7 +29,7 @@ export function RegisterPage() {
     <div className="flex flex-1 items-center justify-center bg-[#F6FAFE] px-4 py-12">
       <div className="w-full max-w-md rounded-3xl border border-[#0070CD]/10 bg-white p-8 shadow-xl">
         <div className="flex flex-col items-center mb-6">
-          <img src="https://innovasolutions.com/wp-content/uploads/2025/01/Logo-New.svg" alt="Innova Solutions Logo" className="h-12 mb-2" style={{ minWidth: 48, minHeight: 48 }} />
+          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-[#0070CD] text-lg font-bold text-white">VR</div>
           <h1 className="text-2xl font-bold text-[#0070CD]">Create an account</h1>
         </div>
         <p className="mb-4 text-sm text-[#0070CD]/80 text-center">

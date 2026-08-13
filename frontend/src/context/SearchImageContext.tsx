@@ -94,17 +94,13 @@ export function SearchImageProvider({ children }: { children: ReactNode }) {
     setError(null)
     setResults([])
 
-    let fetchUrl = url
-    try {
-      const parsed = new URL(url)
-      fetchUrl = parsed.pathname + parsed.search
-    } catch {
-      // already relative
-    }
-
-    fetch(fetchUrl)
-      .then((res) => res.blob())
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Image request failed: ${res.status}`)
+        return res.blob()
+      })
       .then((blob) => {
+        if (!blob.type.startsWith('image/')) throw new Error('The catalogue response was not an image')
         const filename = decodeURIComponent(url.split('/').pop() || 'image.jpg')
         const file = new File([blob], filename, { type: blob.type || 'image/jpeg' })
         setImageFile(file)

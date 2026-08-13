@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Path;
+
 @Component
 public class VectorDBInitService {
 
@@ -17,7 +19,7 @@ public class VectorDBInitService {
 
     public static void createDatabase() throws Exception {
 
-        String databasePath = "src\\main\\resources\\static";
+        String databasePath = Path.of("src", "main", "resources", "static").toString();
 
         String storePath = "embeddings";     // folder where vector store is saved
         VectorStore vectorStore = new JsonVectorStore(storePath);

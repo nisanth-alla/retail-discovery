@@ -13,6 +13,9 @@ public class ImageUtil {
 
         // Read image from multipart file
         BufferedImage bufferedImage = ImageIO.read(multipartFile.getInputStream());
+        if (bufferedImage == null) {
+            throw new IOException("Uploaded file is not a readable image");
+        }
 
         // Output file
         File jpegFile = new File(outputPath);

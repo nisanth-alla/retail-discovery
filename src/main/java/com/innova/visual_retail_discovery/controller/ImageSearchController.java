@@ -54,7 +54,13 @@ public class ImageSearchController {
         log.info("Received image: name={}, size={} bytes, type={}",
                 file.getOriginalFilename(), file.getSize(), file.getContentType());
 
-        File jpeg = ImageUtil.convertToJpeg(file, "output.jpg");
+        File jpeg;
+        try {
+            jpeg = ImageUtil.convertToJpeg(file, "output.jpg");
+        } catch (IOException e) {
+            log.warn("Rejected unreadable image upload: {}", file.getOriginalFilename());
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
 
         FashionDetectionApp fashionDetectionApp = new FashionDetectionApp();
 

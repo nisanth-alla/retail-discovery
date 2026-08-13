@@ -1,121 +1,38 @@
-# Visual Retail Discovery (Frontend)
+# Visual Retail Discovery Frontend
 
-A demo frontend for the **Visual Retail Discovery** hackathon project.
+React and Vite frontend for the Visual Retail Discovery application. It provides the catalogue, visual search, semantic search, styling assistant, and demo vendor flow.
 
-This React + Vite application implements a demo authentication flow and a visual search experience. Users can log in as a vendor, upload product images (mock upload), and search for similar products using an image.
-
-## 🚀 Features
-
-- Drag & drop + file picker upload
-- Image preview + remove action
-- Calls backend API: `POST /api/image/search`
-- Uploads vendor images to: `POST /api/image/register`
-- Shows results in a responsive grid
-- Clean Tailwind UI with modern styling
-
-## 🧩 Backend API Contract
-
-### 1) Image Search API
-
-**POST** `/api/image/search`
-
-- Content-Type: `multipart/form-data`
-- Body field: `file` (file)
-
-Response JSON:
-
-```json
-[
-  {
-    "productId": "p123",
-    "name": "Nike Air Max",
-    "brand": "Nike",
-    "price": 120,
-    "score": 0.92,
-    "imagePath": "https://...",
-    "detectedLabels": ["sneaker", "running"]
-  }
-]
-```
-
-### 2) Vendor Upload API
-
-**POST** `/api/image/register`
-
-- Content-Type: `multipart/form-data`
-- Body field: `images` (multiple files)
-
-### 3) Static Image Fetch (Optional)
-
-The backend also exposes images stored in the demo datastore under:
-
-**GET** `/api/datastore/images/{filename}`
-
-Response:
-- `Content-Type: image/*`
-- Raw image bytes
-
-Example usage in UI (if used):
-
-```tsx
-<img src={`/api/datastore/images/${filename}`} alt={name} />
-```
-
-## 🛠️ Getting Started
+## Development
 
 ```bash
-cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173`.
+The development server runs at `http://localhost:5173`. Vite proxies `/api`, `/datastore`, and `/replicate` requests to the local backend.
 
-> If the backend is unreachable, the frontend falls back to a built-in mock response for demo purposes.
+## Production Build
 
-## 🔐 Demo Authentication
-
-
-**Login credentials (hardcoded):**
-
-- **Normal User**
-  - **Email:** `demo@innovasolutions.com`
-  - **Password:** `password123`
-- **Superuser**
-  - **Email:** `super@innovasolutions.com`
-  - **Password:** `superpassword`
-
-### Routes
-
-- `/login` — Demo login page
-- `/register` — Demo registration page (no real account creation)
-- `/vendor` — Vendor upload page (requires login)
-- `/search` — Public search page
-
-## 🧩 How it works
-
-- Logging in stores a flag in `localStorage` so refreshes keep you logged in.
-- `/vendor` is protected and redirects to `/login` if not authenticated.
-- `/search` is always accessible.
-
-## 📦 Project Structure
-
-- `src/components/` — UI components (uploader, cards, grid)
-- `src/pages/` — page layout (`Home`)
-- `src/hooks/` — state + logic (`useImageSearch`)
-- `src/services/` — API client + mocks
-- `src/types/` — TypeScript types
-
-## ✅ Example Mock Response
-
-When backend calls fail, the app uses this mock response:
-
-```json
-{
-  "results": [
-    { "productId": "p123", "name": "Nike Air Max 270", "brand": "Nike", "price": 129.99, "similarity": 0.92 },
-    { "productId": "p456", "name": "Adidas Ultraboost 5", "brand": "Adidas", "price": 179.99, "similarity": 0.88 },
-    { "productId": "p789", "name": "New Balance 990v6", "brand": "New Balance", "price": 159.0, "similarity": 0.84 }
-  ]
-}
+```bash
+npm run build
 ```
+
+The output is written to `../src/main/resources/static/home/` so Spring Boot can serve the built application.
+
+## Demo Authentication
+
+The authentication flow is intentionally client-side demo functionality:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| User | `demo@retail-discovery.local` | `password123` |
+| Vendor | `vendor@retail-discovery.local` | `vendorpassword` |
+
+It does not provide production account security or persistent user registration.
+
+## Backend Contract
+
+- `POST /api/image/search` accepts an image in the `file` multipart field.
+- `POST /api/image/register` accepts product images in the `images` multipart field.
+- `GET /api/image/fetch` returns the demo catalogue.
+- `POST /api/image/searchtext` accepts a natural-language search request.

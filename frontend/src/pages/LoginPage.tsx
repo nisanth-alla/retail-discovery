@@ -23,7 +23,7 @@ export function LoginPage() {
       return
     }
     if (!login(email, password)) {
-      setError('Invalid credentials. Hint: demo@innovasolutions.com / password123 or super@innovasolutions.com / superpassword')
+      setError('Invalid demo credentials. See the frontend README for the available demo accounts.')
     }
   }
 
@@ -31,7 +31,7 @@ export function LoginPage() {
     <div className="flex flex-1 items-center justify-center bg-white px-4 py-12 transition-all duration-500">
       <div className="w-full max-w-md rounded-3xl border border-[#0070CD]/30 bg-white p-8 shadow-2xl animate-fade-in">
         <div className="text-center mb-6">
-          <img src="https://innovasolutions.com/wp-content/uploads/2025/01/Logo-New.svg" alt="Innova Solutions Logo" className="w-16 h-16 mx-auto mb-4" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0070CD] text-2xl font-bold text-white">VR</div>
           <h1 className="text-2xl font-bold text-[#0070CD]">Sign in</h1>
           <p className="mt-1 text-sm text-[#0070CD]">Enter your email and password to sign in.</p>
         </div>

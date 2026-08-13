@@ -1,5 +1,5 @@
 # ── Stage 1: Build frontend ──────────────────────────────────────────────────
-FROM node:20-slim AS frontend-build
+FROM node:24-slim AS frontend-build
 
 WORKDIR /app/frontend
 
@@ -55,9 +55,9 @@ COPY --from=backend-build /app/target/*.jar app.jar
 COPY --from=backend-build /app/*.onnx ./
 COPY --from=backend-build /app/*.pt   ./
 
-# Copy datastore (product images) and embeddings index
+# Copy datastore (product images) and initialize the optional vector-store path.
 COPY src/main/resources/static/datastore ./src/main/resources/static/datastore
-COPY embeddings/ ./embeddings/
+RUN mkdir -p ./embeddings
 
 # Expose the Spring Boot port
 EXPOSE 8080

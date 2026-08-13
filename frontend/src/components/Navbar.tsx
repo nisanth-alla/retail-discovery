@@ -36,8 +36,8 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-purple-200/50 bg-white/90 backdrop-blur-md dark:border-purple-800/50 dark:bg-slate-950/90 shadow-lg">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-3 text-lg font-bold text-[#0070CD] hover:scale-105 transition-transform duration-200">
-          <img src="https://innovasolutions.com/wp-content/uploads/2025/01/Logo-New.svg" alt="Innova Solutions Logo" className="w-10 h-10" style={{ minWidth: 40, minHeight: 40 }} />
-          <span>Innova Visual Retail</span>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0070CD] text-sm font-bold text-white">VR</span>
+          <span>Visual Retail Discovery</span>
         </Link>
 
         <nav className="flex items-center gap-2 rounded-xl border border-[#0070CD]/20 bg-white p-1">

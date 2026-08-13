@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,7 +30,7 @@ public class FashionDetectionApp {
 
 
     public static List<SearchResult> searchImage(File jpeg) throws Exception {
-        String databasePath = "src\\main\\resources\\static";   // root folder for source images
+        String databasePath = Path.of("src", "main", "resources", "static").toString();
 
 
         ObjectDetector detector = new EnhancedYoloObjectDetector();
@@ -74,7 +75,7 @@ public class FashionDetectionApp {
         for (SearchResult result : uniqueList) {
 
             log.info("Score: {}", result.score);
-            result.imagePath = result.imagePath.replace("src\\main\\resources\\static\\", Utils.API_BASE_URL + "/");
+            result.imagePath = normaliseImagePath(result.imagePath);
             log.info("Image path: {}", result.imagePath);
             log.info("Detected labels: {}", result.detectedLabels);
 
@@ -84,7 +85,7 @@ public class FashionDetectionApp {
     }
 
     public static List<SearchResult> searchImageByFileLabelAndPrice(File jpeg, List<String> labels, Double price) throws Exception {
-        String databasePath = "src\\main\\resources\\static";   // root folder for source images
+        String databasePath = Path.of("src", "main", "resources", "static").toString();
         String storePath = "embeddings";     // folder where vector store is saved
 
         ObjectDetector detector = new EnhancedYoloObjectDetector();
@@ -135,11 +136,7 @@ public class FashionDetectionApp {
         for (SearchResult result : uniqueList) {
 
             log.info("Score: {}", result.score);
-            if(result.imagePath.contains("Mahesh")){
-                result.imagePath = result.imagePath.replace("C:\\Users\\Mahesh.Bantaram\\Desktop\\InternalApps\\Training\\binary_brains_cs04_2026_aih\\target\\classes\\static\\", Utils.API_BASE_URL + "/");
-            }else {
-                result.imagePath = result.imagePath.replace("src\\main\\resources\\static\\", Utils.API_BASE_URL + "/");
-            }
+            result.imagePath = normaliseImagePath(result.imagePath);
             log.info("Image path: {}", result.imagePath);
             log.info("Detected labels: {}", result.detectedLabels);
 
@@ -159,5 +156,15 @@ public class FashionDetectionApp {
 
         List<SearchResult> searchResultList = detector.queryImagesByLabel(vectorStore,embedding,2);
         return searchResultList;
+    }
+
+    private static String normaliseImagePath(String path) {
+        if (path == null) return "";
+        String normalizedPath = path.replace('\\', '/');
+        int staticIndex = normalizedPath.indexOf("/static/");
+        if (staticIndex >= 0) {
+            return normalizedPath.substring(staticIndex + "/static".length());
+        }
+        return path;
     }
 }

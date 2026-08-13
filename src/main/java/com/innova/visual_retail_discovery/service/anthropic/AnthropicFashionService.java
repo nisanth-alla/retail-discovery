@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.innova.visual_retail_discovery.model.ChatRequest.ChatMessage;
+import com.innova.visual_retail_discovery.service.chat.FashionChatService;
+import com.innova.visual_retail_discovery.service.chat.FashionChatSupport;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -13,25 +16,16 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 
 @Service
-public class AnthropicFashionService {
+@ConditionalOnProperty(name = "chat.provider", havingValue = "anthropic")
+public class AnthropicFashionService implements FashionChatService {
 
-    private static final String FASHION_SYSTEM_PROMPT =
-            "You are a friendly AI fashion stylist chatbot. Speak naturally, like a real person texting — casual, warm, and concise.\n\n" +
-            "Rules:\n" +
-            "- Keep replies SHORT (1-2 sentences) unless the user genuinely needs a detailed breakdown.\n" +
-            "- If the user's request is vague or missing context (e.g. no occasion, no style preference, no size/body type hints), ask ONE short clarifying question before giving advice. Never assume — a well-targeted suggestion beats a generic one.\n" +
-            "- When an image context is provided (products found from visual search), ground your response in those results. Reference the detected items naturally.\n" +
-            "- Never make up products or brands you don't know about.\n" +
-            "- If a question is unrelated to fashion, gently redirect in one sentence.\n" +
-            "- Do NOT use bullet lists or headers for simple questions. Save structured output for complex styling guides only.";
-
-    @Value("${anthropic.api.key}")
+    @Value("${anthropic.api.key:}")
     private String apiKey;
 
-    @Value("${anthropic.api.url}")
+    @Value("${anthropic.api.url:https://api.anthropic.com/v1/messages}")
     private String apiUrl;
 
-    @Value("${anthropic.model}")
+    @Value("${anthropic.model:claude-sonnet-4-20250514}")
     private String model;
 
     private final RestTemplate restTemplate;
@@ -43,35 +37,32 @@ public class AnthropicFashionService {
     }
 
     public String chat(String userMessage, List<ChatMessage> history, List<String> imageContext, String userContext) {
-        // Build request body
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("ANTHROPIC_API_KEY is not configured");
+        }
+
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", model);
         body.put("max_tokens", 1024);
 
         // Prepend user profile to system prompt when available
-        String systemPrompt = FASHION_SYSTEM_PROMPT;
-        if (userContext != null && !userContext.isBlank()) {
-            systemPrompt = "User profile — " + userContext + ".\nUse this to personalise every recommendation.\n\n" + FASHION_SYSTEM_PROMPT;
-        }
-        body.put("system", systemPrompt);
+        body.put("system", FashionChatSupport.systemPrompt(userContext));
 
         ArrayNode messages = body.putArray("messages");
 
         // Inject conversation history for multi-turn context
         if (history != null) {
             for (ChatMessage msg : history) {
-                ObjectNode m = messages.addObject();
-                m.put("role", msg.getRole());
-                m.put("content", msg.getContent());
+                if (msg != null && msg.getContent() != null && FashionChatSupport.isValidRole(msg.getRole())) {
+                    ObjectNode m = messages.addObject();
+                    m.put("role", msg.getRole());
+                    m.put("content", msg.getContent());
+                }
             }
         }
 
         // Enrich the user message with image search context if available
-        String enrichedMessage = userMessage;
-        if (imageContext != null && !imageContext.isEmpty()) {
-            enrichedMessage = "[Visual search found these items from our catalogue: " +
-                    String.join(", ", imageContext) + "]\n\nUser said: " + userMessage;
-        }
+        String enrichedMessage = FashionChatSupport.enrichedUserMessage(userMessage, imageContext);
 
         ObjectNode userMsg = messages.addObject();
         userMsg.put("role", "user");
@@ -119,4 +110,3 @@ public class AnthropicFashionService {
         }
     }
 }
-

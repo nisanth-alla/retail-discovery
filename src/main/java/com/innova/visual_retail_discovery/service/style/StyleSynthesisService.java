@@ -251,11 +251,12 @@ public class StyleSynthesisService {
 
     private String normaliseImagePath(String path) {
         if (path == null) return "";
-        if (path.contains("Mahesh")) {
-            return path.replace("C:\\Users\\Mahesh.Bantaram\\Desktop\\InternalApps\\Training\\binary_brains_cs04_2026_aih\\target\\classes\\static\\",
-                                Utils.API_BASE_URL + "/");
+        String normalizedPath = path.replace('\\', '/');
+        int staticIndex = normalizedPath.indexOf("/static/");
+        if (staticIndex >= 0) {
+            return normalizedPath.substring(staticIndex + "/static".length());
         }
-        return path.replace("src\\main\\resources\\static\\", Utils.API_BASE_URL + "/");
+        return path;
     }
 
     private void normaliseImagePaths(List<SearchResult> results) {

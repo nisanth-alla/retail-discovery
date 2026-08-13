@@ -103,7 +103,7 @@ export function Home() {
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white">Home</h1>
-            <p className="text-white/90 text-sm mt-1">Discover the latest trends and styles, powered by Innova Solutions</p>
+            <p className="text-white/90 text-sm mt-1">Search a demo fashion catalogue by image, text, or style.</p>
           </div>
           <div className="flex w-full sm:w-auto items-center gap-2 bg-white/90 rounded-xl shadow-md px-2 py-1 mt-4 sm:mt-0">
             <button

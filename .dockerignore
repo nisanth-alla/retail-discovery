@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+node_modules
+frontend/node_modules
+target
+*.pptx
+business_context
+output
+output.jpg
+src/main/resources/static/output.jpg
+python_module/dataset
+*.log

@@ -1,265 +1,150 @@
-
 # Visual Retail Discovery
 
-An AI-powered fashion e-commerce discovery platform combining visual search, smart outfit recommendations, and conversational AI styling assistance.
+Visual Retail Discovery is a fashion product discovery application that combines image search, semantic text search, outfit recommendations, and conversational styling assistance over a local product catalogue.
 
+This project started at an event and is being continued independently as a personal engineering project.
 
-### Business Objective
-Enable end-users to discover fashion products by uploading an image or describing an item in text, and receive visually similar product matches along with complementary outfit recommendations
+## What It Does
 
+- Finds visually similar products from an uploaded image.
+- Supports natural-language product search using semantic embeddings.
+- Recommends complementary products and lower-cost alternatives.
+- Provides a conversational fashion stylist backed by an open-model provider.
+- Includes a demo vendor flow for registering additional catalogue images.
 
-## Overview
+The catalogue is a local demo dataset rather than a live retail inventory.
 
-The objective is to build a web-based fashion product discovery application that transforms the retail journey from "Keyword Search" to "Visual Discovery." The application empowers users to use their camera as a bridge between real-world inspiration and a product catalog — not just to find a product, but to curate a lifestyle.
-Users can find visually similar fashion items using image recognition and/or natural language descriptions, operating on publicly available datasets rather than live e-commerce catalogs.
+## Architecture
 
-Visual Retail Discovery is built around three core pillars:
+The application is deployed as one Spring Boot service. Spring Boot serves the REST API and the production Vite bundle from the same process.
 
-1. **Visual Search** — Upload an image or type a query to find similar fashion products using semantic embeddings and YOLO-based object detection.
-2. **Style Synthesis & Smart Swaps** — Get outfit completion suggestions and value-optimized alternatives based on detected items.
-3. **Fashion AI Chat** — Conversational styling assistant powered by Anthropic Claude, with multi-turn context and image-aware recommendations.
+```text
+Browser
+  |
+  v
+Spring Boot application
+  |-- REST controllers for search, recommendations, chat, and vendor uploads
+  |-- DJL, ONNX Runtime, YOLO, and OpenCV for image inference
+  |-- Hugging Face embeddings and a JSON vector store for retrieval
+  |-- Static product catalogue and frontend assets
+  `-- Groq-hosted open model for conversational styling
+```
 
----
+The frontend can also run independently during development. Vite proxies API and catalogue requests to the local Spring Boot server.
 
 ## Tech Stack
 
-### Backend
-| Technology | Purpose |
-|---|---|
-| Spring Boot 3.x (Java 17) | REST API framework |
-| DJL (Deep Java Library) 0.36.0 | ML model inference (PyTorch, ONNX) |
-| YOLOv11n | Fashion object detection |
-| HuggingFace `all-MiniLM-L6-v2` | Semantic text & image embeddings |
-| ONNX Runtime 1.17.0 | Custom ONNX model inference |
-| OpenCV 4.9.0 | Image processing |
-| Anthropic Claude API (`claude-sonnet-4-20250514`) | AI fashion chat |
-| SpringDoc OpenAPI 2.8.x | API documentation |
+| Area | Technology |
+| --- | --- |
+| Backend | Java 17, Spring Boot 3.x, Maven |
+| Image inference | DJL, YOLOv11, ONNX Runtime, OpenCV |
+| Search | Hugging Face `all-MiniLM-L6-v2`, cosine similarity, JSON vector store |
+| AI styling | Groq API with `llama-3.3-70b-versatile`; optional Anthropic fallback |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, Material UI |
+| 3D interface | Three.js, React Three Fiber |
 
-### Frontend
-| Technology | Purpose |
-|---|---|
-| React 19 + TypeScript | UI framework |
-| Vite | Build tool & dev server |
-| Tailwind CSS | Styling |
-| Material-UI (MUI) | UI component library |
-| Three.js + React Three Fiber | 3D avatar in chat interface |
-| React Router v6 | Client-side routing |
+## Repository Layout
 
----
-
-## Project Structure
-
-```
-binary_brains_cs04_2026_aih/
-├── src/main/java/com/innova/visual_retail_discovery/
-│   ├── controller/           # REST API endpoints
-│   ├── service/
-│   │   ├── anthropic/        # Anthropic Claude integration
-│   │   ├── detector/         # YOLO object detection
-│   │   ├── embeddings/       # Text & image embeddings
-│   │   ├── engine/           # Style rule engine
-│   │   ├── style/            # Style synthesis & smart swaps
-│   │   ├── vector/           # JSON vector store
-│   │   └── translator/       # YOLO model translators
-│   ├── model/                # Request/response data models
-│   └── data/                 # Data initialization
-├── src/main/resources/static/
-│   ├── datastore/            # 146 fashion product images (dataset)
-│   └── home/                 # Built frontend (served by Spring Boot)
-├── frontend/                 # React + Vite source
-│   └── src/
-│       ├── pages/            # Login, Register, Search, Vendor, Chat, Home
-│       ├── components/       # UI components
-│       ├── context/          # Auth, search, chat state
-│       └── services/         # API client
-├── embeddings/               # Persisted vector index (JSON)
-├── models/                   # ML model files
-├── binary_brains_m1.onnx     # Custom ONNX model
-└── yolo11n.pt                # YOLOv11 Nano model
+```text
+src/main/java/                         Spring Boot API and services
+src/main/resources/static/datastore/   Demo product catalogue
+src/main/resources/static/home/        Production frontend bundle
+frontend/                              React + Vite source
+python_module/                         Dataset and model-support scripts
+*.onnx                                 Custom ONNX models
+yolo11n.pt                             YOLO model
 ```
 
----
+## API Surface
 
-## API Endpoints
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/image/search` | Search by uploaded image |
+| `POST` | `/api/image/searchtext` | Search by text description |
+| `POST` | `/api/image/searchByLabel` | Search with labels and price filters |
+| `POST` | `/api/image/styleIt` | Generate outfit recommendations |
+| `POST` | `/api/image/register` | Register vendor product images |
+| `GET` | `/api/image/fetch` | List catalogue images |
+| `POST` | `/api/fashion/chat` | Ask the conversational stylist |
 
-### Image Search (`/api/image`)
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/image/search` | Visual search by uploaded image |
-| POST | `/api/image/register` | Register vendor product images |
-| GET  | `/api/image/fetch` | Fetch all catalog images |
-| POST | `/api/image/searchByLabel` | Search by image + label + price filter |
-| POST | `/api/image/searchtext` | Text-based semantic search |
-| POST | `/api/image/styleIt` | Style suggestions from text or image |
-
-
-### Fashion Chat (`/api/fashion`)
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/fashion/chat` | Multi-turn AI fashion stylist chat |
-
----
-
-## Getting Started
+## Run Locally
 
 ### Prerequisites
 
-- Java 17+
-- Maven 3.8+
-- Node.js 18+ and npm (for frontend development)
-- Anthropic API key
+- Java 17 or newer
+- Maven 3.8 or newer, or the included Maven wrapper
+- Node.js 24 and npm
+- Groq API key for the chat route
+- Replicate API token only for the virtual try-on route
 
-### Configuration
+### Configure API keys
 
-Set your Anthropic API key in `src/main/resources/application.properties`:
+Set environment variables before starting the backend:
 
-```properties
-anthropic.api.key=YOUR_API_KEY_HERE
-anthropic.model=claude-sonnet-4-20250514
-anthropic.api.url=https://api.anthropic.com/v1/messages
-
-app.upload.dir=src/main/resources/static/datastore
-spring.servlet.multipart.max-file-size=50MB
+```bash
+export GROQ_API_KEY=your_groq_key
+export REPLICATE_API_TOKEN=your_replicate_token
 ```
 
-### Build & Run
+The chat and try-on integrations are optional for image and text search. The chat provider defaults to Groq. To use the Anthropic fallback instead:
 
-#### Backend
+```bash
+export CHAT_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=your_anthropic_key
+```
+
+### Start the backend
+
 ```bash
 ./mvnw spring-boot:run
 ```
-The backend starts on `http://localhost:8080`.
 
-#### Frontend (Development)
+The API and any previously built frontend assets are available at `http://localhost:8080`.
+
+### Start the frontend in development mode
+
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
-The dev server starts on `http://localhost:5173` with a proxy to the backend.
 
-#### Build Frontend for Production
+The development UI runs at `http://localhost:5173` and proxies backend requests to port 8080.
+
+### Build the frontend for Spring Boot
+
 ```bash
 cd frontend
 npm run build
 ```
-Built assets are output to `src/main/resources/static/home/` and served by Spring Boot.
 
----
+The build output is written to `src/main/resources/static/home/` and is served by Spring Boot.
 
-## Features
+### Build and run the container
 
-### Visual Search
-- Drag-and-drop or file-picker image upload
-- YOLO detects fashion items in the uploaded image
-- Semantic similarity search against the indexed product catalog
-- Text search with natural language queries
-- Filter results by label and price
-
-### Style Synthesis
-- **Complete the Look:** Detects items in an uploaded image and recommends complementary products (tops, bottoms, outerwear, accessories)
-- **Smart Swaps:** Suggests alternatives with better value scores based on price savings, ratings, and promotions
-
-### Fashion AI Chat
-- Conversational interface with a 3D avatar
-- Context-aware responses powered by Anthropic Claude
-- Multi-turn conversations with message history
-- Can incorporate visual search results as chat context
-
-### Vendor Portal
-- Protected route for authorized vendors
-- Multi-image product upload and registration
-- Products are indexed into the vector store on upload
-
----
-### Sentence-transformers
-The application uses sentence-transformers from HuggingFace to power semantic understanding across several features:
-
-#### 1. Text-to-Product Semantic Search
-Users describe a fashion item in natural language (e.g., "floral summer dress with puff sleeves"). The description is encoded into a dense vector using a sentence transformer model (e.g., `all-MiniLM-L6-v2`). This embedding is compared against pre-indexed product description embeddings in the vector store to surface the most semantically relevant matches — going beyond keyword overlap.
-
-#### 2. Cross-Modal Query Expansion
-When a user uploads an image and Custom YOLO detects objects (e.g., "blue denim jacket"), the detected labels are passed through a sentence transformer to enrich the query with semantically related terms. This improves recall by bridging the gap between visual detection output and product catalog vocabulary.
-
-#### 3. Outfit Completion (Semantic Pairing)
-For "Complete the Look" suggestions, sentence transformer embeddings of detected garment descriptions are used to find complementary items. Cosine similarity between outfit component embeddings helps rank candidates that pair well stylistically (e.g., pairing "slim-fit chinos" with "Oxford shirt").
-
-### Custom-trained model for Object detection
-
-We have developed Custom-trained model tailored specifically for a fashion retail application.
-The model is currently trained on 15 carefully selected product categories aligned with our business requirements.
-
-By limiting the scope to relevant categories, we achieve:
-- Higher accuracy
-- Faster inference
-- Better user experience
-
-##### Scalability & Future Vision
-As the application evolves, we can incrementally expand the model by training it on new categories.
-This modular approach allows:
- - Controlled growth of the system
-- Continuous improvement without retraining from scratch
-- Faster onboarding of new product lines.
-##### Key Differentiator
-Unlike generic market-available models:
-Our custom model is domain-specific, trained only on our business data.
-
-This gives us:
-- Full control over predictions
-- Reduced noise from irrelevant categories
-- Better alignment with business goals
-
-##### Impact
-- Improved product detection accuracy
-- Enhanced customer experience in search/discovery
-- Flexible and scalable architecture for future expansion
-
-## FashionEmbeddingSemanticService
-
-FashionEmbeddingSemanticService: is the core text-embedding pipeline for semantic product discovery. It uses HuggingFace `sentence-transformers/all-MiniLM-L6-v2` via DJL to power two features:
-
-### Feature — Text-to-Product Semantic Search
-Users describe a fashion item in natural language (e.g., *"floral summer dress with puff sleeves"*). The query is encoded into a dense vector at request-time and compared against **pre-indexed product embeddings** via cosine similarity. This surfaces semantically relevant matches beyond keyword overlap.
-
-
----
-
-## Dataset
-
-The product catalog consists of **146+ fashion images** stored in `src/main/resources/static/datastore/`. Images follow the naming convention:
-
-```
-{Description}_{Brand}_{Category}_{Price}.jpg
+```bash
+docker build -t visual-retail-discovery .
+docker run --rm -p 8080:8080 \
+  -e ANTHROPIC_API_KEY=your_anthropic_key \
+  -e REPLICATE_API_TOKEN=your_replicate_token \
+  visual-retail-discovery
 ```
 
-Example: `Black Blazer_ManQ_Business Formals_2400.jpg`
+## Demo Routes
 
-Product metadata (name, brand, category, price) is parsed directly from the filename.
+| Route | Access |
+| --- | --- |
+| `/` | Public catalogue |
+| `/search` | Public visual and text search |
+| `/chat` | Public stylist chat |
+| `/login` | Demo login |
+| `/register` | Demo registration flow |
+| `/vendor` | Demo vendor upload flow |
 
----
+The authentication flow is client-side demo functionality, not production account security.
 
-### Routes
+## Deployment
 
-| Route | Access | Description |
-|---|---|---|
-| `/` | Public | Landing page |
-| `/login` | Public | Demo login |
-| `/register` | Public | Demo registration |
-| `/search` | Public | Visual & text search |
-| `/chat` | Public | Fashion AI chat |
-| `/vendor` | Protected | Vendor product upload |
+The repository includes a Dockerfile for a single-service deployment. Render is a straightforward low-cost option for hosting it, but its free web service tier sleeps after inactivity and is not suitable for an always-on guarantee. The ML models also make startup and memory limits important deployment constraints.
 
----
-
-## Architecture Notes
-
-- **Vector Store:** Custom JSON-based persistence in the `embeddings/` directory — no external vector database required.
-- **Embeddings:** Products are indexed using HuggingFace `all-MiniLM-L6-v2` text embeddings via DJL with cosine similarity for retrieval.
-- **Style Rules:** A rule-based engine maps gender + item type + color to recommended complementary product categories.
-- **Smart Swap Scoring:** Value scores combine visual similarity, price savings, product ratings, and discount percentages.
-
----
-
-## Team
-
-**Binary Brains** — CS04 2026 AIH Hackathon
+GitHub Pages and Vercel are appropriate for a static frontend, but neither can host this Java inference backend. A genuinely always-on free deployment is not generally available as a reliable managed service; it requires a suitable always-free VM and more operational setup.

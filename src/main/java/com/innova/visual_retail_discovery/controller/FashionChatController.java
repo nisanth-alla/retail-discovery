@@ -6,7 +6,7 @@ package com.innova.visual_retail_discovery.controller;
 
 import com.innova.visual_retail_discovery.model.ChatRequest;
 import com.innova.visual_retail_discovery.model.ChatResponse;
-import com.innova.visual_retail_discovery.service.anthropic.AnthropicFashionService;
+import com.innova.visual_retail_discovery.service.chat.FashionChatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/fashion")
 public class FashionChatController {
 
-    private final AnthropicFashionService fashionService;
+    private final FashionChatService fashionService;
 
-    public FashionChatController(AnthropicFashionService fashionService) {
+    public FashionChatController(FashionChatService fashionService) {
         this.fashionService = fashionService;
     }
 

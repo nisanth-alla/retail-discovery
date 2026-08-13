@@ -7,13 +7,13 @@ const AUTH_ROLE = 'vrd_userRole'
 
 const HARDCODED_USERS = [
   {
-    email: 'demo@innovasolutions.com',
+    email: 'demo@retail-discovery.local',
     password: 'password123',
     role: 'user',
   },
   {
-    email: 'super@innovasolutions.com',
-    password: 'superpassword',
+    email: 'vendor@retail-discovery.local',
+    password: 'vendorpassword',
     role: 'superuser',
   },
 ]
