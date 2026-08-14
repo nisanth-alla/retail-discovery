@@ -1,5 +1,5 @@
-const AVATAR_IDLE = "/models/maleAvatarT.png";
-const AVATAR_SPEAKING = "/models/maleAvatarT.gif";
+const AVATAR_IDLE = `${import.meta.env.BASE_URL}models/maleAvatarT.png`;
+const AVATAR_SPEAKING = `${import.meta.env.BASE_URL}models/maleAvatarT.gif`;
 
 type Avatar2DProps = {
   isSpeaking?: boolean;
