@@ -23,8 +23,9 @@ RUN mvn dependency:go-offline -B
 # Copy source
 COPY src/ ./src/
 
-# Copy built frontend assets into the expected location
-COPY --from=frontend-build /app/frontend/dist ./src/main/resources/static/home
+# Copy built frontend assets into the expected location. Vite's configured
+# output directory is relative to the repository root, not frontend/.
+COPY --from=frontend-build /app/src/main/resources/static/home ./src/main/resources/static/home
 
 # Copy ML model files
 COPY *.onnx ./
@@ -62,11 +63,9 @@ RUN mkdir -p ./embeddings
 # Expose the Spring Boot port
 EXPOSE 8080
 
-# Pass Anthropic API key at runtime via environment variable:
-#   docker run -e ANTHROPIC_API_KEY=sk-ant-... ...
-ENV ANTHROPIC_API_KEY=""
+# API keys are read by Spring from the runtime environment.
+RUN useradd --system --create-home appuser \
+    && chown -R appuser:appuser /app
+USER appuser
 
-ENTRYPOINT ["java", \
-  "-Dspring.profiles.active=prod", \
-  "-Danthropicapikey=${ANTHROPIC_API_KEY}", \
-  "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]

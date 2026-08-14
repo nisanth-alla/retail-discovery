@@ -125,7 +125,7 @@ The build output is written to `src/main/resources/static/home/` and is served b
 ```bash
 docker build -t visual-retail-discovery .
 docker run --rm -p 8080:8080 \
-  -e ANTHROPIC_API_KEY=your_anthropic_key \
+  -e GROQ_API_KEY=your_groq_key \
   -e REPLICATE_API_TOKEN=your_replicate_token \
   visual-retail-discovery
 ```
@@ -145,6 +145,15 @@ The authentication flow is client-side demo functionality, not production accoun
 
 ## Deployment
 
-The repository includes a Dockerfile for a single-service deployment. Render is a straightforward low-cost option for hosting it, but its free web service tier sleeps after inactivity and is not suitable for an always-on guarantee. The ML models also make startup and memory limits important deployment constraints.
+The repository includes a Dockerfile and Render Blueprint for a single-service deployment.
+
+For Render:
+
+1. Create a Web Service from this repository and select Docker, or use the included `render.yaml` Blueprint.
+2. Add `GROQ_API_KEY` as a secret environment variable in the Render dashboard. Do not commit the key or put it in `render.yaml`.
+3. Keep `CHAT_PROVIDER=groq` unless using the optional Anthropic fallback.
+4. Deploy and verify `/`, `/api/image/fetch`, and `/api/fashion/chat` from the generated `onrender.com` URL.
+
+Render's free web service tier sleeps after inactivity and is not suitable for an always-on guarantee. The ML models also make startup and memory limits important deployment constraints.
 
 GitHub Pages and Vercel are appropriate for a static frontend, but neither can host this Java inference backend. A genuinely always-on free deployment is not generally available as a reliable managed service; it requires a suitable always-free VM and more operational setup.

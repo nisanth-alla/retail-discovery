@@ -11,3 +11,7 @@ embeddings/vector_store.json
 .env.local
 target/
 node_modules/
+
+# Local inference artifacts
+/output
+/output.jpg

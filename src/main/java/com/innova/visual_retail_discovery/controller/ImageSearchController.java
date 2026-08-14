@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +41,7 @@ public class ImageSearchController {
     private static final List<String> IMAGE_EXTENSIONS =
             List.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg");
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @PostMapping(value = "/search", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<SearchResult>> search(@RequestParam("file") MultipartFile file, @RequestParam(required = false,name="isFindSimilar") boolean isFindSimilar) throws Exception {
 
@@ -72,14 +70,14 @@ public class ImageSearchController {
     }
 
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@RequestPart("images") List<MultipartFile> images) throws IOException {
         vendorService.registerProducts(images);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @GetMapping(value = "/fetch")
     public ResponseEntity<Map<String, Object>> fetchimages() throws IOException {
         Resource folderResource = new ClassPathResource("static/datastore");
@@ -89,23 +87,20 @@ public class ImageSearchController {
                     .body(Map.of("error", "Datastore folder not found"));
         }
 
-        Path folderPath = Paths.get(folderResource.getURI());
-
-        List<Map<String, String>> images;
-        try (var stream = Files.list(folderPath)) {
-            images = stream
-                    .filter(Files::isRegularFile)
-                    .filter(p -> isImageFile(p.getFileName().toString()))
-                    .sorted(Comparator.comparing(p -> p.getFileName().toString()))
-                    .map(p -> {
-                        String filename = p.getFileName().toString();
+        Resource[] resources = new PathMatchingResourcePatternResolver()
+                .getResources("classpath:/static/datastore/*");
+        List<Map<String, String>> images = Arrays.stream(resources)
+                    .filter(Resource::isReadable)
+                    .filter(resource -> resource.getFilename() != null && isImageFile(resource.getFilename()))
+                    .sorted(Comparator.comparing(resource -> resource.getFilename()))
+                    .map(resource -> {
+                        String filename = resource.getFilename();
                         Map<String, String> entry = new LinkedHashMap<>();
                         entry.put("filename", filename);
                         entry.put("url", "/datastore/" + filename);
                         return entry;
                     })
                     .collect(Collectors.toList());
-        }
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("total", images.size());
@@ -114,7 +109,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(response);
     }
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @PostMapping(value = "/searchByLabel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<SearchResult>> searchByImageLabelsAndPrice(@RequestParam(name="file") MultipartFile file ,
                                                                           @RequestParam("label") List<String> labels,
@@ -138,7 +133,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(searchResults);
     }
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @PostMapping(value = "/searchtext")
     public ResponseEntity<Map<String, Object>> searchtext(@RequestParam String text) throws Exception {
 
@@ -161,7 +156,7 @@ public class ImageSearchController {
                     img.put("filename", searchResultItr.name);
                     img.put("score", String.valueOf(searchResultItr.score * 100));
                     img.put("brand", searchResultItr.brand);
-                    img.put("url", "/"+searchResultItr.imagePath);
+                    img.put("url", toPublicImageUrl(searchResultItr.imagePath));
                     imagesMap.add(img);
                 } else {
                     log.debug("Score filtered out: {}", searchResultItr.score * 100);
@@ -176,9 +171,6 @@ public class ImageSearchController {
             return ResponseEntity.ok(response);
 
         }
-
-        Path folderPath = Paths.get(folderResource.getURI());
-
 
         VectorStore vectorStore = new JsonVectorStore("embeddings");
         vectorStore.load();
@@ -219,7 +211,7 @@ public class ImageSearchController {
                 img.put("filename", searchResult.name);
                 img.put("score", String.valueOf(searchResult.score*100));
                 img.put("brand", searchResult.brand);
-                img.put("url", searchResult.imagePath.replace("src\\main\\resources\\static\\datastore\\", "/datastore/"));
+                img.put("url", toPublicImageUrl(searchResult.imagePath));
                 imagesMap.add(img);
             }else{
                 log.debug("Score filtered out: {}", searchResult.score * 100);
@@ -250,7 +242,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(response);
     }
 
-    @CrossOrigin(origins = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}")
     @PostMapping(value = "/styleIt", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> styleIt(@RequestParam(required = false) String text,@RequestParam(value = "file",required = false) MultipartFile inputFile) throws Exception {
         VectorStore vectorStore = new JsonVectorStore("embeddings");
@@ -295,7 +287,7 @@ public class ImageSearchController {
                     Map<String, String> img = new HashMap<>();
                     img.put("filename", searchResult.name);
                     img.put("style",searchItr.getKey());
-                    img.put("url", searchResult.imagePath.replace("src\\main\\resources\\static\\datastore\\", "/datastore/"));
+                    img.put("url", toPublicImageUrl(searchResult.imagePath));
                     imagesMap.add(img);
                 }
             }
@@ -349,6 +341,21 @@ public class ImageSearchController {
     }
 
 
+
+    private String toPublicImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isBlank()) {
+            return "";
+        }
+        String normalizedPath = imagePath.replace('\\', '/');
+        int staticIndex = normalizedPath.indexOf("/static/");
+        if (staticIndex >= 0) {
+            return normalizedPath.substring(staticIndex + "/static".length());
+        }
+        if (normalizedPath.startsWith("/datastore/") || normalizedPath.startsWith("/cropped/")) {
+            return normalizedPath;
+        }
+        return "/" + normalizedPath;
+    }
 
     private boolean isImageFile(String filename) {
         String lower = filename.toLowerCase();

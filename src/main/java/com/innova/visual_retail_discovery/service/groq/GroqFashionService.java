@@ -45,7 +45,8 @@ public class GroqFashionService implements FashionChatService {
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", model);
         body.put("temperature", 0.7);
-        body.put("max_tokens", 512);
+        body.put("max_completion_tokens", 512);
+        body.put("reasoning_effort", "low");
 
         ArrayNode messages = body.putArray("messages");
         ObjectNode systemMessage = messages.addObject();
