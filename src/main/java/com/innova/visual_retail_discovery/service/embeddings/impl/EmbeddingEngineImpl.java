@@ -25,6 +25,8 @@ import java.util.List;
 public class EmbeddingEngineImpl implements EmbeddingEngine {
 
     private static final Logger log = LoggerFactory.getLogger(EmbeddingEngineImpl.class);
+    private static final Object MODEL_LOCK = new Object();
+    private static volatile ZooModel<Image, float[]> sharedModel;
 
 
     @Override
@@ -41,8 +43,8 @@ public class EmbeddingEngineImpl implements EmbeddingEngine {
                 .optTranslator(new EmbeddingTranslator()) // your custom translator
                 .build();
 
-        try (ZooModel<Image, float[]> model = criteria.loadModel();
-             Predictor<Image, float[]> predictor = model.newPredictor()) {
+        ZooModel<Image, float[]> model = getSharedModel(criteria);
+        try (Predictor<Image, float[]> predictor = model.newPredictor()) {
 
             Image img = ImageFactory.getInstance().fromFile(Paths.get(imagePath));
             float[] embedding = predictor.predict(img);
@@ -54,6 +56,20 @@ public class EmbeddingEngineImpl implements EmbeddingEngine {
             return embedding;
         }
 
+    }
+
+    private static ZooModel<Image, float[]> getSharedModel(Criteria<Image, float[]> criteria) throws Exception {
+        ZooModel<Image, float[]> model = sharedModel;
+        if (model == null) {
+            synchronized (MODEL_LOCK) {
+                model = sharedModel;
+                if (model == null) {
+                    model = criteria.loadModel();
+                    sharedModel = model;
+                }
+            }
+        }
+        return model;
     }
 
     @Override

@@ -37,14 +37,11 @@ public class FashionDetectionApp {
         String storePath = "embeddings";     // folder where vector store is saved
         VectorStore vectorStore = new JsonVectorStore(storePath);
 
-        // ── BUILD or LOAD index ──────────────────────────────────────────────
-        TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
-        textEmbeddingService.init();
-
-        EmbeddingEngine embedder = new EmbeddingEngineImpl();
-        FashionIndexer indexer = new FashionIndexer(vectorStore, textEmbeddingService,embedder);
-
         if (vectorStore.isEmpty()) {
+            TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
+            textEmbeddingService.init();
+            EmbeddingEngine embedder = new EmbeddingEngineImpl();
+            FashionIndexer indexer = new FashionIndexer(vectorStore, textEmbeddingService, embedder);
             log.info("=== STEP 1-4: Building vector index from filedatabase/ ===");
             indexer.buildIndex(databasePath);
             log.info("Index built and saved.");
@@ -90,18 +87,13 @@ public class FashionDetectionApp {
 
         ObjectDetector detector = new EnhancedYoloObjectDetector();
 
-        // ── BUILD or LOAD index ──────────────────────────────────────────────
-        TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
-        textEmbeddingService.init();
-
-        EmbeddingEngine embedder = new EmbeddingEngineImpl();
-
         VectorStore vectorStore = new JsonVectorStore(storePath);
 
-        // ── BUILD or LOAD index ──────────────────────────────────────────────
-        FashionIndexer indexer = new FashionIndexer(vectorStore,textEmbeddingService,embedder);
-
         if (vectorStore.isEmpty()) {
+            TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
+            textEmbeddingService.init();
+            EmbeddingEngine embedder = new EmbeddingEngineImpl();
+            FashionIndexer indexer = new FashionIndexer(vectorStore, textEmbeddingService, embedder);
             log.info("=== STEP 1-4: Building vector index from filedatabase/ ===");
             indexer.buildIndex(databasePath);
             log.info("Index built and saved.");
