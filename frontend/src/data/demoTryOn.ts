@@ -22,11 +22,13 @@ export interface DemoOutfit {
 }
 
 // ── Sample people ─────────────────────────────────────────────────────────────
-// Place your photos in:  frontend/public/demo/persons/
+const ASSET_BASE = import.meta.env.BASE_URL;
+
+// Place your photos in: frontend/public/demo/persons/
 export const DEMO_PERSONS: DemoPerson[] = [
-  { id: "p1", name: "Person 1", photo: "/demo/persons/person1.jpg" },
-  { id: "p2", name: "Person 2", photo: "/demo/persons/person2.jpg" },
-  { id: "p3", name: "Person 3", photo: "/demo/persons/person3.jpg" },
+  { id: "p1", name: "Person 1", photo: `${ASSET_BASE}demo/persons/person1.jpg` },
+  { id: "p2", name: "Person 2", photo: `${ASSET_BASE}demo/persons/person2.jpg` },
+  { id: "p3", name: "Person 3", photo: `${ASSET_BASE}demo/persons/person3.jpg` },
 ];
 
 // ── Sample outfits ────────────────────────────────────────────────────────────
@@ -37,28 +39,28 @@ export const DEMO_OUTFITS: DemoOutfit[] = [
     name: "Outfit 1",
     category: "upper_body",
     description: "Outfit 1",
-    photo: "/demo/outfits/outfit1.png",
+    photo: `${ASSET_BASE}demo/outfits/outfit1.png`,
   },
   {
     id: "o2",
     name: "Outfit 2",
     category: "upper_body",
     description: "Outfit 2",
-    photo: "/demo/outfits/outfit2.png",
+    photo: `${ASSET_BASE}demo/outfits/outfit2.png`,
   },
   {
     id: "o3",
     name: "Outfit 3",
     category: "dresses",
     description: "Outfit 3",
-    photo: "/demo/outfits/outfit3.png",
+    photo: `${ASSET_BASE}demo/outfits/outfit3.png`,
   },
   {
     id: "o4",
     name: "Outfit 4",
     category: "upper_body",
     description: "Outfit 4",
-    photo: "/demo/outfits/outfit4.png",
+    photo: `${ASSET_BASE}demo/outfits/outfit4.png`,
   },
 ];
 
@@ -73,16 +75,16 @@ export const DEMO_OUTFITS: DemoOutfit[] = [
 // Filename format: result_p1_o1.jpg  (personId _ outfitId)
 // All person+outfit combos using same person1 results (demo shortcut)
 export const DEMO_RESULTS: Record<string, string | null> = {
-  p1_o1: "/demo/results/result_p1_o1.jpg",
-  p1_o2: "/demo/results/result_p1_o2.png",
-  p1_o3: "/demo/results/result_p1_o3.jpg",
-  p1_o4: "/demo/results/result_p1_o4.jpg",
-  p2_o1: "/demo/results/result_p2_o1.png",
-  p2_o2: "/demo/results/result_p1_o2.jpg",
-  p2_o3: "/demo/results/result_p1_o3.jpg",
-  p2_o4: "/demo/results/result_p1_o4.jpg",
-  p3_o1: "/demo/results/result_p1_o1.jpg",
-  p3_o2: "/demo/results/result_p1_o2.jpg",
-  p3_o3: "/demo/results/result_p3_o3.png",
-  p3_o4: "/demo/results/result_p1_o4.jpg",
+  p1_o1: `${ASSET_BASE}demo/results/result_p1_o1.jpg`,
+  p1_o2: `${ASSET_BASE}demo/results/result_p1_o2.png`,
+  p1_o3: `${ASSET_BASE}demo/results/result_p1_o3.jpg`,
+  p1_o4: `${ASSET_BASE}demo/results/result_p1_o4.jpg`,
+  p2_o1: `${ASSET_BASE}demo/results/result_p2_o1.png`,
+  p2_o2: `${ASSET_BASE}demo/results/result_p1_o2.jpg`,
+  p2_o3: `${ASSET_BASE}demo/results/result_p1_o3.jpg`,
+  p2_o4: `${ASSET_BASE}demo/results/result_p1_o4.jpg`,
+  p3_o1: `${ASSET_BASE}demo/results/result_p1_o1.jpg`,
+  p3_o2: `${ASSET_BASE}demo/results/result_p1_o2.jpg`,
+  p3_o3: `${ASSET_BASE}demo/results/result_p3_o3.png`,
+  p3_o4: `${ASSET_BASE}demo/results/result_p1_o4.jpg`,
 };
