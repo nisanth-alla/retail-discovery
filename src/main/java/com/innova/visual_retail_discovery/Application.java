@@ -4,6 +4,7 @@ import com.innova.visual_retail_discovery.service.embeddings.impl.TextEmbeddingS
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 
@@ -24,6 +25,7 @@ public class Application {
 	}
 
 	@Bean
+	@Lazy
 	public TextEmbeddingService embeddingService() throws Exception {
 		TextEmbeddingService svc = new TextEmbeddingService();
 		svc.init();   // loads model once at startup

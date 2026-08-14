@@ -58,7 +58,7 @@ COPY --from=backend-build /app/*.pt   ./
 
 # Copy datastore (product images) and initialize the optional vector-store path.
 COPY src/main/resources/static/datastore ./src/main/resources/static/datastore
-RUN mkdir -p ./embeddings
+COPY embeddings/vector_store.json ./embeddings/vector_store.json
 
 # Expose the Spring Boot port
 EXPOSE 8080

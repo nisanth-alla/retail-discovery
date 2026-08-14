@@ -24,17 +24,16 @@ public class VectorDBInitService {
         String storePath = "embeddings";     // folder where vector store is saved
         VectorStore vectorStore = new JsonVectorStore(storePath);
 
-        TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
-        textEmbeddingService.init();
-
-        EmbeddingEngine embedder = new EmbeddingEngineImpl();
-
-        FashionIndexer indexer = new FashionIndexer(vectorStore, textEmbeddingService,embedder);
-
         if (vectorStore.isEmpty()) {
+            TextEmbeddingService textEmbeddingService = new TextEmbeddingService();
+            textEmbeddingService.init();
+            EmbeddingEngine embedder = new EmbeddingEngineImpl();
+            FashionIndexer indexer = new FashionIndexer(vectorStore, textEmbeddingService, embedder);
             log.info("=== STEP 1 Building vector index from filedatabase/ ===");
             indexer.buildIndex(databasePath);
             log.info("Index built and saved.");
+        } else {
+            log.info("Existing vector index found; skipping startup indexing.");
         }
         log.info("DB Initialized");
     }
