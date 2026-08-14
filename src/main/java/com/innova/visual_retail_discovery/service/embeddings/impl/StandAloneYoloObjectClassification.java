@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
@@ -31,15 +32,19 @@ public class StandAloneYoloObjectClassification {
 
     // Must match the order in your dataset.yaml "names"
     private static final String[] CLASS_NAMES = Utils.SUPPORTED_CLASSES;
+    private static final Object SESSION_LOCK = new Object();
+    private static volatile OrtEnvironment sharedEnvironment;
+    private static volatile OrtSession sharedSession;
 
 
     public static List<File> createCroppedImageAndReturnFiles(String imagePath) throws OrtException {
         log.info("[Step 4] In StandAlone Cropped Image version......");
         log.info("Loading model: {}", MODEL_PATH);
         List<File> files = new ArrayList<>();
-        try (OrtEnvironment env = OrtEnvironment.getEnvironment();
-             OrtSession session = env.createSession(MODEL_PATH, cpuOptions())) {
+        OrtEnvironment env = getSharedEnvironment();
+        OrtSession session = getSharedSession(env);
 
+        try {
 //            System.out.println("Model loaded");
 //            System.out.println("Input  : " + session.getInputNames());
 //            System.out.println("Output : " + session.getOutputNames());
@@ -63,7 +68,10 @@ public class StandAloneYoloObjectClassification {
 
             // ── Run inference ────────────────────────────────────────────────
             long t0 = System.currentTimeMillis();
-            OrtSession.Result result = session.run(inputs);
+            OrtSession.Result result;
+            synchronized (SESSION_LOCK) {
+                result = session.run(inputs);
+            }
             //System.out.printf("Inference time: %d ms%n", System.currentTimeMillis() - t0);
 
             // ── Post-process ─────────────────────────────────────────────────
@@ -84,7 +92,11 @@ public class StandAloneYoloObjectClassification {
                         BufferedImage cropped = img.getSubimage(d.x1, d.y1, d.x2 - d.x1, d.y2 - d.y1);
                         int num = new Random().nextInt(100);
                         String fileName = "cropped-"+num+"_" + CLASS_NAMES[d.classId] + ".jpg".toUpperCase();
-                        File file = new File("target\\classes\\static\\cropped",fileName);
+                        File croppedDirectory = Path.of("target", "classes", "static", "cropped").toFile();
+                        if (!croppedDirectory.exists() && !croppedDirectory.mkdirs()) {
+                            throw new IOException("Unable to create cropped image directory");
+                        }
+                        File file = new File(croppedDirectory, fileName);
                         ImageIO.write(cropped, "jpg",file );
                         log.info("[Step 4.1] Cropped image saved for {}", CLASS_NAMES[d.classId]);
                         files.add(file);
@@ -102,6 +114,7 @@ public class StandAloneYoloObjectClassification {
 
             log.info("[Step 4.2] Annotated image saved -> output.jpg");
 
+            result.close();
             tensor.close();
             return files;
         } catch (IOException e) {
@@ -109,6 +122,34 @@ public class StandAloneYoloObjectClassification {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static OrtEnvironment getSharedEnvironment() {
+        OrtEnvironment environment = sharedEnvironment;
+        if (environment == null) {
+            synchronized (SESSION_LOCK) {
+                environment = sharedEnvironment;
+                if (environment == null) {
+                    environment = OrtEnvironment.getEnvironment();
+                    sharedEnvironment = environment;
+                }
+            }
+        }
+        return environment;
+    }
+
+    private static OrtSession getSharedSession(OrtEnvironment environment) throws OrtException {
+        OrtSession session = sharedSession;
+        if (session == null) {
+            synchronized (SESSION_LOCK) {
+                session = sharedSession;
+                if (session == null) {
+                    session = environment.createSession(MODEL_PATH, cpuOptions());
+                    sharedSession = session;
+                }
+            }
+        }
+        return session;
     }
 
 

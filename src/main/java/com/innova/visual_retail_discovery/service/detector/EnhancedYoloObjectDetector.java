@@ -8,6 +8,7 @@ import ai.djl.modality.Classifications;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.DetectedObjects;
+import ai.djl.translate.TranslateException;
 import ai.onnxruntime.OrtException;
 import com.innova.visual_retail_discovery.model.SearchResult;
 import com.innova.visual_retail_discovery.service.translator.EnhancedYoloV11Translator;
@@ -43,18 +44,38 @@ public class EnhancedYoloObjectDetector implements ObjectDetector {
             Utils.SUPPORTED_CLASSES
     );
 
-    private Model model;
-    private Predictor<Image, DetectedObjects> predictor;
+    private static final Object MODEL_LOCK = new Object();
+    private static volatile Model sharedModel;
+    private static volatile Predictor<Image, DetectedObjects> sharedPredictor;
+    private final Predictor<Image, DetectedObjects> predictor;
 
     public EnhancedYoloObjectDetector() throws IOException, MalformedModelException {
-        Model model = Model.newInstance("yolo11n", "OnnxRuntime");
-
-        // Load your trained ONNX model
-        model.load(Paths.get(TRAINED_MODEL_PATH));
-
-        predictor = model.newPredictor(new EnhancedYoloV11Translator(CLASSES));
+        predictor = getSharedPredictor();
 
         //System.out.println("YOLO ONNX model loaded successfully.");
+    }
+
+    private static Predictor<Image, DetectedObjects> getSharedPredictor() throws IOException, MalformedModelException {
+        Predictor<Image, DetectedObjects> predictor = sharedPredictor;
+        if (predictor == null) {
+            synchronized (MODEL_LOCK) {
+                predictor = sharedPredictor;
+                if (predictor == null) {
+                    Model model = Model.newInstance("yolo11n", "OnnxRuntime");
+                    model.load(Paths.get(TRAINED_MODEL_PATH));
+                    sharedModel = model;
+                    predictor = model.newPredictor(new EnhancedYoloV11Translator(CLASSES));
+                    sharedPredictor = predictor;
+                }
+            }
+        }
+        return predictor;
+    }
+
+    private DetectedObjects predict(Image image) throws TranslateException {
+        synchronized (MODEL_LOCK) {
+            return predictor.predict(image);
+        }
     }
 
     @Override
@@ -109,7 +130,7 @@ public class EnhancedYoloObjectDetector implements ObjectDetector {
         Image croppedImage = ImageFactory.getInstance()
                 .fromFile(Paths.get(croppedImageFile.getPath()));
 
-        DetectedObjects detections = predictor.predict(croppedImage);
+        DetectedObjects detections = predict(croppedImage);
 
         List<String> result = new ArrayList<>();
 
@@ -158,7 +179,7 @@ public class EnhancedYoloObjectDetector implements ObjectDetector {
         Image croppedImage = ImageFactory.getInstance()
                 .fromFile(Paths.get(croppedImageFile.getPath()));
 
-        DetectedObjects detections = predictor.predict(croppedImage);
+        DetectedObjects detections = predict(croppedImage);
 
         List<String> result = new ArrayList<>();
 
@@ -222,8 +243,7 @@ public class EnhancedYoloObjectDetector implements ObjectDetector {
 
     @Override
     public void close() {
-        if (predictor != null) predictor.close();
-        if (model != null) model.close();
+        // Shared model resources live for the process lifetime and are not closed per request.
     }
 
     public static List<File> createCroppedImageAndReturnFiles(String imagePath) throws OrtException {
