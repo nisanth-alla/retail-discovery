@@ -13,6 +13,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +37,7 @@ public class ImageSearchController {
     private ResourceLoader resourceLoader;
 
     @Autowired
+    @Lazy
     TextEmbeddingService textEmbeddingService;
 
     private static final List<String> IMAGE_EXTENSIONS =
