@@ -26,7 +26,7 @@ public class FashionChatController {
      * Body: { "message": "What should I wear to a summer wedding?" }
      */
     
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping("/chat")
     public ResponseEntity<ChatResponse> chat(@RequestBody ChatRequest request) {
         if (request.getMessage() == null || request.getMessage().isBlank()) {

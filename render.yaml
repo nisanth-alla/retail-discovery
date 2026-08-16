@@ -13,3 +13,13 @@ services:
         sync: false
       - key: REPLICATE_API_TOKEN
         sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: AUTH_VENDOR_EMAILS
+        sync: false

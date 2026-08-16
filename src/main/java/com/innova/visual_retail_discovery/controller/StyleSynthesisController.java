@@ -28,7 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/style")
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
 public class StyleSynthesisController {
 
     private static final Logger log = LoggerFactory.getLogger(StyleSynthesisController.class);

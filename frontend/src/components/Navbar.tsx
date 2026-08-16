@@ -72,7 +72,7 @@ export function Navbar() {
                   <div className="border-t border-purple-100 dark:border-purple-800" />
                   <button
                     type="button"
-                    onClick={() => { logout(); setMenuOpen(false); navigate('/login') }}
+                    onClick={() => { void logout().finally(() => { setMenuOpen(false); navigate('/login') }) }}
                     className="w-full px-4 py-2 text-left text-sm text-slate-700 transition-colors duration-200 hover:bg-purple-50 dark:text-slate-200 dark:hover:bg-purple-900/50"
                   >
                     Logout

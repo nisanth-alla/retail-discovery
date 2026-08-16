@@ -42,6 +42,12 @@ export interface FashionChatResponse {
   reply: string
 }
 
+export interface AuthUser {
+  email: string
+  name: string
+  role: 'user' | 'vendor'
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function multipart(...files: Array<[string, File]>): FormData {
@@ -50,10 +56,45 @@ function multipart(...files: Array<[string, File]>): FormData {
   return fd
 }
 
+function readCookie(name: string): string | null {
+  const value = document.cookie.split('; ').find(cookie => cookie.startsWith(`${name}=`))
+  return value ? decodeURIComponent(value.split('=').slice(1).join('=')) : null
+}
+
+async function ensureCsrfToken(): Promise<string | null> {
+  const existing = readCookie('XSRF-TOKEN')
+  if (existing) return existing
+  const response = await fetch(`${API_BASE}/api/auth/csrf`, { credentials: 'include' })
+  if (!response.ok) throw new Error(`CSRF initialization failed: ${response.status}`)
+  return readCookie('XSRF-TOKEN')
+}
+
+async function backendFetch(url: string, init: RequestInit = {}): Promise<Response> {
+  const method = (init.method ?? 'GET').toUpperCase()
+  const headers = new Headers(init.headers)
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+    const token = await ensureCsrfToken()
+    if (token) headers.set('X-XSRF-TOKEN', token)
+  }
+  return fetch(url, { ...init, headers, credentials: 'include' })
+}
+
 async function post<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { method: 'POST', ...init })
+  const response = await backendFetch(url, { method: 'POST', ...init })
   if (!response.ok) throw new Error(`${url} → ${response.status}`)
   return response.json()
+}
+
+export async function getCurrentUser(): Promise<AuthUser | null> {
+  const response = await backendFetch(`${API_BASE}/api/auth/me`)
+  if (response.status === 401) return null
+  if (!response.ok) throw new Error(`Auth check failed: ${response.status}`)
+  return response.json()
+}
+
+export async function logoutCurrentUser(): Promise<void> {
+  const response = await backendFetch(`${API_BASE}/api/auth/logout`, { method: 'POST' })
+  if (!response.ok) throw new Error(`Logout failed: ${response.status}`)
 }
 
 // Virtual Try-On API — calls Replicate IDM-VTON directly from the browser
@@ -163,7 +204,7 @@ export async function virtualTryOn(
 // ─── Catalog ──────────────────────────────────────────────────────────────────
 
 export async function fetchCatalogImages(): Promise<CatalogResponse> {
-  const response = await fetch(`${API_BASE}/api/image/fetch`)
+  const response = await backendFetch(`${API_BASE}/api/image/fetch`)
   if (!response.ok) throw new Error(`Catalog fetch failed: ${response.status}`)
   return response.json()
 }
@@ -178,7 +219,7 @@ export async function searchVisualProducts(
   image: File,
   signal?: AbortSignal,
 ): Promise<VisualSearchResponse> {
-  const response = await fetch(`${API_BASE}/api/image/search`, {
+  const response = await backendFetch(`${API_BASE}/api/image/search`, {
     method: 'POST',
     body: multipart(['file', image]),
     signal,
@@ -211,7 +252,8 @@ export async function searchByLabel(labels: string[], price: number, image: File
 export async function uploadVendorProducts(images: File[], signal?: AbortSignal): Promise<void> {
   const fd = new FormData()
   images.forEach(f => fd.append('images', f))
-  await fetch(`${API_BASE}/api/image/register`, { method: 'POST', body: fd, signal })
+  const response = await backendFetch(`${API_BASE}/api/image/register`, { method: 'POST', body: fd, signal })
+  if (!response.ok) throw new Error(`Vendor upload failed: ${response.status}`)
 }
 
 // ─── Fashion Chat ─────────────────────────────────────────────────────────────

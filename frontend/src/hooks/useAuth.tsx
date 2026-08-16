@@ -1,23 +1,5 @@
-import { createContext, useContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
-
-
-const AUTH_KEY = 'vrd_isLoggedIn'
-const AUTH_USER = 'vrd_userEmail'
-const AUTH_ROLE = 'vrd_userRole'
-
-const HARDCODED_USERS = [
-  {
-    email: 'demo@retail-discovery.local',
-    password: 'password123',
-    role: 'user',
-  },
-  {
-    email: 'vendor@retail-discovery.local',
-    password: 'vendorpassword',
-    role: 'superuser',
-  },
-]
-
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { getCurrentUser, logoutCurrentUser, API_BASE, type AuthUser } from '../services/api'
 
 export type AuthState = {
   isAuthenticated: boolean
@@ -26,92 +8,61 @@ export type AuthState = {
   isInitialized: boolean
 }
 
-
 type AuthContextType = AuthState & {
-  login: (email: string, password: string) => boolean
-  logout: () => void
+  loginWithGoogle: () => void
+  logout: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
-
-const getAuthStateFromStorage = (): AuthState => {
-  if (typeof window === 'undefined' || !window.localStorage) {
-    return {
-      isAuthenticated: false,
-      userEmail: null,
-      userRole: null,
-      isInitialized: true,
-    }
-  }
-
-  const stored = localStorage.getItem(AUTH_KEY)
-  const email = localStorage.getItem(AUTH_USER)
-  const roleRaw = localStorage.getItem(AUTH_ROLE)
-  const role: 'user' | 'superuser' | null =
-    roleRaw === 'user' || roleRaw === 'superuser' ? roleRaw : null
+function toAuthState(user: AuthUser | null): AuthState {
   return {
-    isAuthenticated: stored === 'true',
-    userEmail: email,
-    userRole: role,
+    isAuthenticated: Boolean(user),
+    userEmail: user?.email ?? null,
+    userRole: user?.role === 'vendor' ? 'superuser' : user ? 'user' : null,
     isInitialized: true,
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    userEmail: null,
+    userRole: null,
+    isInitialized: false,
+  })
 
-  const [authState, setAuthState] = useState<AuthState>(getAuthStateFromStorage)
+  const refresh = useCallback(async () => {
+    try {
+      setAuthState(toAuthState(await getCurrentUser()))
+    } catch {
+      setAuthState(toAuthState(null))
+    }
+  }, [])
 
   useEffect(() => {
-    const handleStorage = () => {
-      setAuthState(getAuthStateFromStorage())
-    }
+    void refresh()
+  }, [refresh])
 
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+  const loginWithGoogle = useCallback(() => {
+    window.location.assign(`${API_BASE}/oauth2/authorization/google`)
   }, [])
 
-
-  const login = useCallback((email: string, password: string) => {
-    const found = HARDCODED_USERS.find(
-      (u) => u.email === email.toLowerCase() && u.password === password
-    )
-    if (!found) return false
-
-    localStorage.setItem(AUTH_KEY, 'true')
-    localStorage.setItem(AUTH_USER, found.email)
-    localStorage.setItem(AUTH_ROLE, found.role)
-    setAuthState({
-      isAuthenticated: true,
-      userEmail: found.email,
-      userRole: found.role as 'user' | 'superuser',
-      isInitialized: true,
-    })
-    return true
+  const logout = useCallback(async () => {
+    await logoutCurrentUser()
+    setAuthState(toAuthState(null))
   }, [])
 
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_KEY)
-    localStorage.removeItem(AUTH_USER)
-    localStorage.removeItem(AUTH_ROLE)
-    setAuthState({ isAuthenticated: false, userEmail: null, userRole: null, isInitialized: true })
-  }, [])
-
-
-  const value: AuthContextType = {
-    ...authState,
-    login,
-    logout,
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ ...authState, loginWithGoogle, logout, refresh }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }

@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api")
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
 public class TryOnController {
 
     @Autowired

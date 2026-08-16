@@ -19,16 +19,9 @@ npm run build
 
 The output is written to `../src/main/resources/static/home/` so Spring Boot can serve the built application.
 
-## Demo Authentication
+## Authentication
 
-The authentication flow is intentionally client-side demo functionality:
-
-| Role | Email | Password |
-| --- | --- | --- |
-| User | `demo@retail-discovery.local` | `password123` |
-| Vendor | `vendor@retail-discovery.local` | `vendorpassword` |
-
-It does not provide production account security or persistent user registration.
+The frontend uses the backend session established by Google OAuth2. It does not store authentication state or passwords in local storage. The backend determines the user role; vendor access is restricted to configured `AUTH_VENDOR_EMAILS`.
 
 ## Backend Contract
 
