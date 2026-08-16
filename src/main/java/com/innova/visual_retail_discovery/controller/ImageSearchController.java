@@ -43,7 +43,7 @@ public class ImageSearchController {
     private static final List<String> IMAGE_EXTENSIONS =
             List.of(".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg");
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping(value = "/search", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<SearchResult>> search(@RequestParam("file") MultipartFile file, @RequestParam(required = false,name="isFindSimilar") boolean isFindSimilar) throws Exception {
 
@@ -72,14 +72,14 @@ public class ImageSearchController {
     }
 
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(@RequestPart("images") List<MultipartFile> images) throws IOException {
         vendorService.registerProducts(images);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @GetMapping(value = "/fetch")
     public ResponseEntity<Map<String, Object>> fetchimages() throws IOException {
         Resource folderResource = new ClassPathResource("static/datastore");
@@ -111,7 +111,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(response);
     }
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping(value = "/searchByLabel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<List<SearchResult>> searchByImageLabelsAndPrice(@RequestParam(name="file") MultipartFile file ,
                                                                           @RequestParam("label") List<String> labels,
@@ -135,7 +135,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(searchResults);
     }
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping(value = "/searchtext")
     public ResponseEntity<Map<String, Object>> searchtext(@RequestParam String text) throws Exception {
 
@@ -244,7 +244,7 @@ public class ImageSearchController {
         return ResponseEntity.ok(response);
     }
 
-    @CrossOrigin(originPatterns = "${app.cors.origin}")
+    @CrossOrigin(originPatterns = "${app.cors.origin}", allowCredentials = "true")
     @PostMapping(value = "/styleIt", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> styleIt(@RequestParam(required = false) String text,@RequestParam(value = "file",required = false) MultipartFile inputFile) throws Exception {
         VectorStore vectorStore = new JsonVectorStore("embeddings");

@@ -76,6 +76,7 @@ yolo11n.pt                             YOLO model
 - Node.js 24 and npm
 - Groq API key for the chat route
 - Replicate API token only for the virtual try-on route
+- Google OAuth credentials for production authentication
 
 ### Configure API keys
 
@@ -92,6 +93,8 @@ The chat and try-on integrations are optional for image and text search. The cha
 export CHAT_PROVIDER=anthropic
 export ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+Google sign-in is enabled in the production profile. Configure `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`, and `AUTH_VENDOR_EMAILS` in the deployment environment. See [`docs/production-readiness.md`](docs/production-readiness.md) for the Google Cloud Console redirect URI and remaining production work.
 
 ### Start the backend
 
@@ -141,7 +144,7 @@ docker run --rm -p 8080:8080 \
 | `/register` | Demo registration flow |
 | `/vendor` | Demo vendor upload flow |
 
-The authentication flow is client-side demo functionality, not production account security.
+Authentication uses a server-side session established by Google OAuth2. Vendor upload authorization is granted only to emails listed in `AUTH_VENDOR_EMAILS`.
 
 ## Deployment
 

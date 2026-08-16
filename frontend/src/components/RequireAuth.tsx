@@ -10,9 +10,12 @@ type RequireAuthProps = {
 
 
 export function RequireAuth({ children, requiredRole }: RequireAuthProps) {
-  const { isAuthenticated, userRole } = useAuth()
+  const { isAuthenticated, userRole, isInitialized } = useAuth()
   const location = useLocation()
 
+  if (!isInitialized) {
+    return <div className="flex flex-1 items-center justify-center p-8 text-sm text-slate-500">Checking your session…</div>
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
