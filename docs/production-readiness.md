@@ -27,6 +27,7 @@ Configure these deployment variables in Render. Store secrets only in the Render
 | --- | --- | --- |
 | `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | Yes | Exact backend OAuth callback URL |
 | `FRONTEND_URL` | Yes | URL used after OAuth success |
 | `AUTH_VENDOR_EMAILS` | Recommended | Comma-separated Google emails allowed to upload products |
 | `GROQ_API_KEY` | For chat | Groq API credential |
@@ -37,6 +38,14 @@ For the current unified deployment, set `FRONTEND_URL` to:
 ```text
 https://retail-discovery.onrender.com
 ```
+
+Set `GOOGLE_REDIRECT_URI` in Render to:
+
+```text
+https://retail-discovery.onrender.com/login/oauth2/code/google
+```
+
+Do not use the frontend route (`/login`) as the OAuth redirect URI, and do not add a trailing slash.
 
 If the frontend and backend are split later, set `FRONTEND_URL` and `CORS_ORIGIN` to the Vercel frontend URL, and set `VITE_API_BASE_URL` in Vercel to the backend URL.
 

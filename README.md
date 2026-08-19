@@ -51,9 +51,11 @@ src/main/resources/static/datastore/   Demo product catalogue
 src/main/resources/static/home/        Production frontend bundle
 frontend/                              React + Vite source
 python_module/                         Dataset and model-support scripts
-*.onnx                                 Custom ONNX models
-yolo11n.pt                             YOLO model
+*.onnx                                 Custom ONNX models (downloaded, not committed)
+yolo11n.pt                             YOLO model (downloaded, not committed)
 ```
+
+Model weights (`.onnx`, `.pt`) are intentionally not committed to the repository because they are large binaries. They are gitignored. Obtain or build them as documented in the inference scripts before running the image search features.
 
 ## API Surface
 
@@ -160,3 +162,7 @@ For Render:
 Render's free web service tier sleeps after inactivity and is not suitable for an always-on guarantee. The ML models also make startup and memory limits important deployment constraints.
 
 GitHub Pages and Vercel are appropriate for a static frontend, but neither can host this Java inference backend. A genuinely always-on free deployment is not generally available as a reliable managed service; it requires a suitable always-free VM and more operational setup.
+
+## License
+
+MIT

@@ -13,3 +13,11 @@ node_modules/
 # Local inference artifacts
 /output
 /output.jpg
+
+# Model weights and inference artifacts (large binaries; download separately)
+*.onnx
+*.pt
+*.pkl
+*.h5
+*.npy
+*.joblib
